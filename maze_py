@@ -1,0 +1,195 @@
+from pygame import *
+
+
+
+#spritelar için parent sınıfı
+class GameSprite(sprite.Sprite):
+    #sınıf oluşturucu
+    def __init__(self, player_image, player_x, player_y, player_speed):
+        super().__init__()
+ 
+       # her sprite bir resim özelliği depolamalıdır - bir resim
+        self.image = transform.scale(image.load(player_image), (55, 55))
+        self.speed = player_speed
+ 
+        # her hareketli grafiğin özelliği rect'i saklaması gerekir - içine yazıldığı dikdörtgen
+        self.rect = self.image.get_rect()
+        self.rect.x = player_x
+        self.rect.y = player_y
+
+
+    def reset(self):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+
+#oyuncu sprite için child sınıfı (oklarla kontrol edilir)
+class Player(GameSprite):
+    def update(self):
+        keys = key.get_pressed()
+        if keys[K_LEFT] and self.rect.x > 5:
+            self.rect.x -= self.speed
+        if keys[K_RIGHT] and self.rect.x < win_width - 80:
+            self.rect.x += self.speed
+        if keys[K_UP] and self.rect.y > 5:
+            self.rect.y -= self.speed
+        if keys[K_DOWN] and self.rect.y < win_height - 80:
+            self.rect.y += self.speed
+
+
+#düşman sprite için child sınıfı (kendini hareket ettirir)
+class Enemy(GameSprite):
+    side = "left"
+    def update(self):
+        if self.rect.x <= 210:
+            self.side = "right"
+        if self.rect.x >= win_width - 450:
+            self.side = "left"
+        if self.side == "left":
+            self.rect.x -= self.speed
+        else:
+            self.rect.x += self.speed
+
+class Enemy2(GameSprite):
+    side = "left"
+    def update(self):
+        if self.rect.y <= 270:
+            self.side = "right"
+        if self.rect.y >= win_width - 250:
+            self.side = "left"
+        if self.side == "left":
+            self.rect.y -= self.speed
+        else:
+            self.rect.y += self.speed
+
+#3.Hafta
+# engel spriteları için sınıf
+class Wall(sprite.Sprite):
+    def __init__(self, color_1, color_2, color_3, wall_x, wall_y, wall_width, wall_height):
+        super().__init__()
+        self.color_1 = color_1
+        self.color_2 = color_2
+        self.color_3 = color_3
+        self.width = wall_width
+        self.height = wall_height
+        # duvar resmi - istenilen boyut ve renkte bir dikdörtgen
+        self.image = Surface([self.width, self.height])
+        self.image.fill((color_1, color_2, color_3))
+        # her hareketli grafiğin bir rect özelliği saklaması gerekir - bir dikdörtgen
+        self.rect = self.image.get_rect()
+        self.rect.x = wall_x
+        self.rect.y = wall_y
+    def draw_wall(self):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+       
+'''Oyun açıklaması'''
+
+
+#oyun sahnesi:
+win_width = 900
+win_height = 750
+window = display.set_mode((win_width, win_height))
+display.set_caption("Maze")
+background = transform.scale(image.load("background.jpg"), (win_width, win_height))
+
+
+#3.Hafta
+w1 = Wall(154, 205, 50, 100, 20 , 780, 10) 
+w2 = Wall(154, 205, 50, 100, 730, 650, 10)
+w3 = Wall(154, 205, 50, 100, 20 , 10, 100) 
+w4 = Wall(154, 205, 50, 200, 30, 10, 400) 
+w5 = Wall(154, 205, 50, 870, 30, 10, 710) 
+w6 = Wall(154, 205, 50, 610, 420, 10, 220) 
+w7 = Wall(154, 205, 50, 380, 220, 500, 10) 
+w8 = Wall(154, 205, 50, 100, 200 , 10, 530)
+w9 = Wall(154, 205, 50, 200, 520 , 100, 10)
+w10 = Wall(154, 205, 50, 300, 120, 10, 410) 
+w11 = Wall(154, 205, 50, 300, 120 , 450, 10)
+w12 = Wall(154, 205, 50, 400, 330, 10, 200)
+w13 = Wall(154, 205, 50, 200, 520, 10, 210)
+w14 = Wall(154, 205, 50, 500, 420, 10, 110)
+w15 = Wall(154, 205, 50, 300, 320 , 450, 10)
+w16 = Wall(154, 205, 50, 610, 420 , 260, 10)
+w17 = Wall(154, 205, 50, 400, 520 , 100, 10)
+w18 = Wall(154, 205, 50, 310, 635 , 310, 10)
+w19 = Wall(154, 205, 50, 740, 520, 10, 220)
+#Oyunun karakterleri:
+packman = Player('hero.png', 5, win_height - 480, 4)
+monster = Enemy('cyborg.png', win_width - 450, 560, 4)
+monster2 = Enemy2('cyborg.png', win_width - 770, 250, 6)
+final = GameSprite('treasure.png', win_width - 120, win_height - 80, 0)
+
+
+game = True
+finish = False
+clock = time.Clock()
+FPS = 60
+
+
+#3.Hafta
+font.init()
+font = font.Font(None, 70)
+win = font.render('YOU WIN!', True, (255, 215, 0))
+lose = font.render('YOU LOSE!', True, (180, 0, 0))
+
+
+#müzik
+mixer.init()
+mixer.music.load('jungles.ogg')
+mixer.music.play()
+#3.hafta
+money = mixer.Sound('money.ogg')
+kick = mixer.Sound('kick.ogg')
+
+
+while game:
+    for e in event.get():
+        if e.type == QUIT:
+            game = False
+
+
+    if finish != True:
+        window.blit(background,(0, 0))
+        packman.update()
+        monster.update()
+        monster2.update()
+
+        packman.reset()
+        monster.reset()
+        monster2.reset()
+        final.reset()
+       
+        #3.hafta
+        w1.draw_wall()
+        w2.draw_wall()
+        w3.draw_wall()
+        w4.draw_wall()
+        w5.draw_wall()
+        w6.draw_wall()
+        w7.draw_wall()
+        w8.draw_wall()
+        w9.draw_wall()
+        w10.draw_wall()
+        w11.draw_wall()
+        w12.draw_wall()
+        w13.draw_wall()
+        w14.draw_wall()
+        w15.draw_wall()
+        w16.draw_wall()
+        w17.draw_wall()
+        w18.draw_wall()
+        w19.draw_wall()
+        #Durum "Kayıp"
+        if sprite.collide_rect(packman, monster) or sprite.collide_rect(packman, monster2) or sprite.collide_rect(packman, w1) or sprite.collide_rect(packman, w2) or  sprite.collide_rect(packman, w3) or sprite.collide_rect(packman, w4) or sprite.collide_rect(packman, w5) or sprite.collide_rect(packman, w6) or sprite.collide_rect(packman, w7) or sprite.collide_rect(packman, w8) or sprite.collide_rect(packman, w9) or sprite.collide_rect(packman, w10) or sprite.collide_rect(packman, w11) or sprite.collide_rect(packman, w12) or sprite.collide_rect(packman, w11) or sprite.collide_rect(packman, w12) or sprite.collide_rect(packman, w13) or sprite.collide_rect(packman, w14) or sprite.collide_rect(packman, w15) or sprite.collide_rect(packman, w16) or sprite.collide_rect(packman, w17) or sprite.collide_rect(packman, w18) or sprite.collide_rect(packman, w19):
+            finish = True
+            window.blit(lose, (350, 350))
+            kick.play()
+        #Durum "Kazanmak"
+        if sprite.collide_rect(packman, final):
+            finish = True
+            window.blit(win, (350, 350))
+            money.play()
+
+
+    display.update()
+    clock.tick(FPS)
+
